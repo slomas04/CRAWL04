@@ -11,6 +11,7 @@
 
 ###### IMPORTS ######
 import urllib.request
+from urllib.parse import urlparse
 import re
 
 ###### GET TARGET SITE ######
@@ -34,29 +35,57 @@ def geturl():
 def gethtml(url):
     return(urllib.request.urlopen(url).read()) #returns whole site data as HTML
 
+###### CULL LIST ######
+
+def cullList(l):
+    return list(dict.fromkeys(l)) #removes duplicates from list and returns it
+
 ###### SCAN SITE DATA FOR MORE URLS ######
 
 def scan(data):
     regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
-    # Absolutely disgusting and awful regex line
+    # Absolutely disgusting and evil regex line
     urls = re.findall(regex,data)      
     return [x[0] for x in urls]
     
 
 ###### MAINLOOP ######
+targetlist = []
+targetlist.append(geturl())
+initurl = targetlist[0]
+listofURLs = []
+scannedURLs = []
 
-targeturl = geturl()
+iteration = 1
+while True:
+    choi = input("Iteration " + str(iteration) + ":\t(type 'exit' to save to file and exit)\nPress Enter to continue... ")
+    if choi == "exit":
+        break
+    iteration += 1
+    for i in range(len(targetlist)):
+        data = str(gethtml(targetlist[i]))
+        urllist = scan(data) #get list of URLs from URL
+        for i in range(len(urllist)):
+            listofURLs.append(urllist[i]) #Add every value of the list to the big list of urls
         
-input("Your target URL is " + targeturl + "\nPress enter to start iteration 1...")
-
-data = (gethtml(targeturl)).decode("utf-8")
-urllist = scan(data)
-
-file = open('', 'w')
-
-for i in range(len(urllist)):
-    print(urllist[i])
-
+    listofURLs = cullList(listofURLs)
+    for i in range(len(targetlist)):
+        scannedURLs.append(targetlist[i])
+    targetlist = []
+    for i in range(len(listofURLs)):
+        if (initurl in listofURLs[i]) and :
+            targetlist += listofURLs[i]
+            
 
 
 
+###### SAVE TO FILE AND EXIT ######
+filename = urlparse(initurl).netloc
+filename += ".txt"
+file = open(filename, 'w')
+
+for i in range(len(listofURLs)):
+    file.write(listofURLs[i] + "\n")
+    
+file.close()
+print("Saved to " + filename + "!")
